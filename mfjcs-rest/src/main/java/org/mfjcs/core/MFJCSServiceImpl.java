@@ -5,7 +5,6 @@ import static org.mfjcs.core.SolrConstants.VERSION_FIELD;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
@@ -15,6 +14,8 @@ import org.mfjcs.api.CreateItemRequest;
 import org.mfjcs.api.IndexOperationFailedException;
 import org.mfjcs.api.Item;
 import org.mfjcs.api.MFJCSService;
+
+import com.google.common.collect.Maps;
 
 public class MFJCSServiceImpl implements MFJCSService {
 
@@ -42,9 +43,10 @@ public class MFJCSServiceImpl implements MFJCSService {
 	}
 
 	private Map<String, Object> solrDocItemFields(SolrDocument solrDoc) {
-		return solrDoc.getFieldValueMap().entrySet().stream()
-				.filter(e -> e.getValue().equals(VERSION_FIELD))
-				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+		Map<String, Object> result = Maps.newHashMap();
+		solrDoc.getFieldNames().forEach(f ->
+			result.put(f, solrDoc.getFieldValue(f)));
+		return result;
 	}
 
 	@Override
