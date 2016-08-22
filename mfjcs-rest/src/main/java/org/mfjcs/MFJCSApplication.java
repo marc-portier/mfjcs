@@ -1,5 +1,9 @@
 package org.mfjcs;
 
+import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.mfjcs.api.MFJCSService;
+import org.mfjcs.core.MFJCSServiceImpl;
+import org.mfjcs.health.SolrClientHealthCheck;
 import org.mfjcs.resources.ItemResource;
 
 import io.dropwizard.Application;
@@ -24,10 +28,13 @@ public class MFJCSApplication extends Application<MFJCSConfiguration> {
     @Override
     public void run(final MFJCSConfiguration configuration,
                     final Environment environment) {
-        //TODO: create MfjcsService, constructor-inject a blobstore and a solrj client
-        //TODO: add health checks
+        CloudSolrClient solrClient = new CloudSolrClient.Builder()
+                .withZkHost(configuration.getSolrZkHost())
+                .build();
 
-        environment.jersey().register(new ItemResource());
+        MFJCSService mfjcs = new MFJCSServiceImpl(solrClient, configuration.getSolrItemCollection());
+        environment.healthChecks().register("solr-item-collection-ping", new SolrClientHealthCheck(solrClient, configuration.getSolrPingMaxElapsedTime(), configuration.getSolrItemCollection()));
+        environment.jersey().register(new ItemResource(mfjcs));
     }
 
 }

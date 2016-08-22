@@ -1,39 +1,35 @@
 package org.mfjcs.resources;
 
-import static java.util.UUID.randomUUID;
-
-import java.util.Collections;
-import java.util.Map;
-
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
-import org.mfjcs.api.Item;
+import org.mfjcs.api.IndexOperationFailedException;
+import org.mfjcs.api.MFJCSService;
 
 @Path("items")
 public class ItemResource {
 
+	private MFJCSService mfjcsService;
+
+	public ItemResource(MFJCSService mfjcsService) {
+		this.mfjcsService = mfjcsService;
+	}
+
 	@Path("{uuid}")
 	@GET
 	@Produces("application/json")
-	public ItemToJsonAdapter getItem(@PathParam("uuid") String uuid) {
-		return new ItemToJsonAdapter(new Item() {
-			@Override
-			public String getUuid() {
-				return randomUUID().toString();
-			}
+	public ItemToJsonAdapter getItem(@PathParam("uuid") String uuid) throws IndexOperationFailedException {
+		return new ItemToJsonAdapter(mfjcsService.getItem(uuid));
+	}
 
-			@Override
-			public Long getVersion() {
-				return 1L;
-			}
-
-			@Override
-			public Map<String, Object> getFields() {
-				return Collections.singletonMap("name", "example");
-			}
-		});
+	@POST
+	@Consumes("application/json")
+	public ItemToJsonAdapter createNewItem(CreateItemRequestFromJsonAdapter createItemRequest) throws IndexOperationFailedException {
+		// TODO: add self link. Consider siren or hal?
+		return new ItemToJsonAdapter(mfjcsService.createNewItem(createItemRequest));
 	}
 }
