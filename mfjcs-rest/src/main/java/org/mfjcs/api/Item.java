@@ -4,9 +4,7 @@ import java.util.Map;
 
 public interface Item {
 
-	String getUuid();
-
-	Long getVersion();
+	ItemMetadata getMetadata();
 
 	Map<String, Object> getFields();
 

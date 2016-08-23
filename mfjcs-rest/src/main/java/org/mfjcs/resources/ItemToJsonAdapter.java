@@ -9,18 +9,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ItemToJsonAdapter {
 
 	private Item item;
+	private ItemMetadataToJsonAdapter itemMetadataToJsonAdapter;
 
-	public ItemToJsonAdapter(Item item) {
+	public ItemToJsonAdapter(Item item, ItemMetadataToJsonAdapter itemMetadataToJsonAdapter) {
 		this.item = item;
+		this.itemMetadataToJsonAdapter = itemMetadataToJsonAdapter;
 	}
 
 	@JsonProperty
-	public String getUuid() {
-		return item.getUuid();
+	public ItemMetadataToJsonAdapter getMetaData() {
+		return itemMetadataToJsonAdapter;
 	}
-
-	@JsonProperty
-	public Long getVersion() { return item.getVersion(); }
 
 	@JsonProperty
 	public Map<String, Object> getFields() {

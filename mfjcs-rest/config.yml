@@ -2,3 +2,5 @@ logging:
   level: INFO
   loggers:
     org.mfjcs: DEBUG
+
+storageBasePath: ~/.mfjcs-dev/store
