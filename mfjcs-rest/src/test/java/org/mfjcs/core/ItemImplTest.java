@@ -17,19 +17,13 @@ public class ItemImplTest {
 	@Mock
 	ItemMetadata metadata;
 
-	Map fields = Collections.singletonMap("foo", "test");
-
-	@Test
-	public void constructorSetsMetadata() {
-		ItemImpl item = new ItemImpl(metadata, null);
-
-		assertThat(item.getMetadata()).isEqualTo(metadata);
-	}
+	Map<String, Object> fields = Collections.singletonMap("foo", "test");
 
 	@Test
 	public void constructorSetsFields() {
-		ItemImpl item = new ItemImpl(null, fields);
+		ItemImpl item = new ItemImpl(metadata, fields);
 
+		assertThat(item.getMetadata()).isEqualTo(metadata);
 		assertThat(item.getFields()).isEqualTo(fields);
 	}
 
