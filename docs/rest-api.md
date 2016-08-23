@@ -11,9 +11,9 @@ GET /items/{uuid}
 
 ```json
 {
-  id: "{uuid}",
-  version: {version},
-  fields: {
+  "id": "{uuid}",
+  "version": {version},
+  "fields": {
 	...
   }
 }
