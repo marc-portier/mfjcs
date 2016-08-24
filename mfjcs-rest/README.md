@@ -2,9 +2,11 @@
 
 ## Starting and configuring Solr
 
-$SOLR_HOME/bin/solr start -c -s solr/home
-$SOLR_HOME/bin/solr zk -upconfig -d solr/conf/mfjcs-items -n mfjcs-items -z localhost:9983
-$SOLR_HOME/bin/solr create -c mfjcs-items -n mfjcs-items
+```
+> $SOLR_HOME/bin/solr start -c -s solr/home
+> $SOLR_HOME/bin/solr zk -upconfig -d solr/conf/mfjcs-items -n mfjcs-items -z localhost:9983
+> $SOLR_HOME/bin/solr create -c mfjcs-items -n mfjcs-items
+```
 
 ## Starting the REST API
 
