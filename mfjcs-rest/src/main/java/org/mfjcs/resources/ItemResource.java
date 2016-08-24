@@ -8,7 +8,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
 import org.mfjcs.api.IndexOperationFailedException;
+import org.mfjcs.api.Item;
+import org.mfjcs.api.ItemStoreException;
 import org.mfjcs.api.MFJCSService;
+import org.mfjcs.core.ItemNotFoundException;
 
 @Path("items")
 public class ItemResource {
@@ -22,14 +25,17 @@ public class ItemResource {
 	@Path("{uuid}")
 	@GET
 	@Produces("application/json")
-	public ItemToJsonAdapter getItem(@PathParam("uuid") String uuid) throws IndexOperationFailedException {
-		return new ItemToJsonAdapter(mfjcsService.getItem(uuid));
+	public ItemToJsonAdapter getItem(@PathParam("uuid") String uuid) throws IndexOperationFailedException, ItemNotFoundException {
+		return createItemToJsonAdapter(mfjcsService.getItem(uuid));
 	}
 
 	@POST
 	@Consumes("application/json")
-	public ItemToJsonAdapter createNewItem(CreateItemRequestFromJsonAdapter createItemRequest) throws IndexOperationFailedException {
-		// TODO: add self link. Consider siren or hal?
-		return new ItemToJsonAdapter(mfjcsService.createNewItem(createItemRequest));
+	public ItemToJsonAdapter createNewItem(CreateItemRequestFromJsonAdapter createItemRequest) throws IndexOperationFailedException, ItemStoreException {
+		return createItemToJsonAdapter(mfjcsService.createNewItem(createItemRequest));
+	}
+
+	private ItemToJsonAdapter createItemToJsonAdapter(Item newItem) {
+		return new ItemToJsonAdapter(newItem, new ItemMetadataToJsonAdapter(newItem.getMetadata()));
 	}
 }

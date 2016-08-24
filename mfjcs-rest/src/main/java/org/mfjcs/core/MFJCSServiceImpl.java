@@ -13,6 +13,8 @@ import org.apache.solr.common.SolrInputDocument;
 import org.mfjcs.api.CreateItemRequest;
 import org.mfjcs.api.IndexOperationFailedException;
 import org.mfjcs.api.Item;
+import org.mfjcs.api.ItemStore;
+import org.mfjcs.api.ItemStoreException;
 import org.mfjcs.api.MFJCSService;
 
 import com.google.common.collect.Maps;
@@ -20,26 +22,30 @@ import com.google.common.collect.Maps;
 public class MFJCSServiceImpl implements MFJCSService {
 
 	private CloudSolrClient solrClient;
+	private ItemStore itemStore;
 	private String itemCollection;
 
-	public MFJCSServiceImpl(CloudSolrClient solrClient, String itemCollection) {
+	public MFJCSServiceImpl(ItemStore itemStore, CloudSolrClient solrClient, String itemCollection) {
+		this.itemStore = itemStore;
 		this.solrClient = solrClient;
 		this.itemCollection = itemCollection;
 	}
 
 	@Override
-	public Item getItem(String uuid) throws IndexOperationFailedException {
+	public Item getItem(String uuid) throws IndexOperationFailedException, ItemNotFoundException {
 		SolrDocument solrDoc;
 		try {
 			solrClient.setDefaultCollection(itemCollection);
 			solrDoc = solrClient.getById(uuid);
 
-			// TODO: throw ItemNotFoundException if solrDoc is null
+			if (solrDoc == null) {
+				throw new ItemNotFoundException(uuid);
+			}
 
 		} catch (SolrServerException | IOException e) {
 			throw new IndexOperationFailedException(e);
 		}
-		return new ItemImpl(uuid, (Long)solrDoc.getFieldValue(VERSION_FIELD), solrDocItemFields(solrDoc));
+		return new ItemImpl(new ItemMetadataImpl(uuid, (Long)solrDoc.getFieldValue(VERSION_FIELD), getAuthor()), solrDocItemFields(solrDoc));
 	}
 
 	private Map<String, Object> solrDocItemFields(SolrDocument solrDoc) {
@@ -50,10 +56,10 @@ public class MFJCSServiceImpl implements MFJCSService {
 	}
 
 	@Override
-	public Item createNewItem(CreateItemRequest createItemRequest) throws IndexOperationFailedException {
-		ItemImpl item = new ItemImpl(randomUUID().toString(), System.currentTimeMillis(), createItemRequest.getFields());
+	public Item createNewItem(CreateItemRequest createItemRequest) throws ItemStoreException, IndexOperationFailedException {
+		ItemImpl item = new ItemImpl(new ItemMetadataImpl(randomUUID().toString(), System.currentTimeMillis(), getAuthor()), createItemRequest.getFields());
 
-		// TODO: persist item on filesystem item store
+		itemStore.save(item);
 
 		SolrInputDocument inputDoc = new SolrInputDocument();
 		createItemRequest.getFields().forEach(inputDoc::addField);
@@ -64,5 +70,10 @@ public class MFJCSServiceImpl implements MFJCSService {
 			throw new IndexOperationFailedException(e);
 		}
 		return item;
+	}
+
+	private String getAuthor() {
+		// TODO: look into dropwizard auth (supports OAuth)
+		return "unknown";
 	}
 }
